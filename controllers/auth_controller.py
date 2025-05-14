@@ -30,6 +30,13 @@ class AuthController:
 
         return user, "sucess"
 
-    def register(self, usuario, senha):
-        self.users.append(Cliente(usuario, senha))
-        return self.users[-1]
+    def register(self, usuario, senha, tipo="cliente"):
+        if self.user_exists(usuario):
+            return None, "user_exists"
+        #Implementacao Factory Method
+        novo_usuario = UsuarioFactory.criar_usuario(tipo, usuario, senha)
+        if tipo == "admin":
+            self.admins.append(novo_usuario)
+        else:
+            self.users.append(novo_usuario)
+        return novo_usuario, "success"
