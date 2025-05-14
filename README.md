@@ -1,4 +1,4 @@
-# E-Commerce System - POO Project (Versão Atualizada)
+# E-Commerce System - POO Project (Versão Implementação de Padrões de Projeto)
 
 ## Descrição
 Sistema completo de e-commerce desenvolvido em Python utilizando Programação Orientada a Objetos (POO) e padrões de projeto. O sistema agora inclui:
