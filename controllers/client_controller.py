@@ -31,9 +31,13 @@ class ClientController:
                 print("Logout realizado.")
                 break
 
-    def handle_purchase_or_add_to_cart(self, products):
-        # Implementação similar à função comprar_ou_adicionar do código original
-        pass
+    
+    def finalizar_compra(self):
+        facade = CheckoutFacade(self.client.carrinho, self.client)
+        success, msg = facade.finalizar_compra("Cartão")
+        print(msg)
+        if success:
+            self.client.carrinho.clear()
 
     def manage_cart(self):
         # Implementação similar à função gerenciar_carrinho do código original
