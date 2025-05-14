@@ -1,3 +1,5 @@
+from services.payment_strategy import PaymentContext, CreditCardPayment, PixPayment
+
 class CheckoutFacade:
     def __init__(self, carrinho, usuario):
         self.carrinho = carrinho
@@ -21,8 +23,15 @@ class CheckoutFacade:
         return sum(item['preco'] for item in self.carrinho)
 
     def _processar_pagamento(self, metodo, total):
-        # Lógica de pagamento (pode usar Strategy aqui)
-        return True
+        if metodo == "Cartão":
+            strategy = CreditCardPayment()
+        elif metodo == "Pix":
+            strategy = PixPayment()
+        else:
+            return False
+        
+        context = PaymentContext(strategy)
+        return context.execute_payment(total)
 
     def _gerar_pedido(self):
         from models.order import OrderManager
