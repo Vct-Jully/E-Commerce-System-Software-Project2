@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+# --- Classes originais (mantidas) ---
 class Usuario(ABC):
     def __init__(self, usuario, senha, nome=None, email=None):
         self.usuario = usuario
@@ -16,24 +17,46 @@ class Usuario(ABC):
         pass
 
     def gerenciar_perfil(self):
-        # Implementação do gerenciamento de perfil
         pass
-
 
 class Administrador(Usuario):
     def menu(self):
-        # Será implementado no controller
-        pass
-
+        pass  # Implementado no AdminController
 
 class Cliente(Usuario):
-    def __init__(self, usuario, senha):
-        super().__init__(usuario, senha)
+    def __init__(self, usuario, senha, nome=None, email=None):
+        super().__init__(usuario, senha, nome, email)
         self.carrinho = []
+
     def view_orders(self):
         from models.order import OrderManager
         return OrderManager.get_user_orders(self.usuario)
 
     def menu(self):
-        # Será implementado no controller
-        pass
+        pass  # Implementado no ClientController
+
+# --- Factory Method (nova adição) ---
+class UsuarioFactory:
+    @staticmethod
+    def criar_usuario(tipo, usuario, senha, nome=None, email=None):
+        """Cria instâncias de usuário baseadas no tipo.
+        
+        Args:
+            tipo (str): 'admin' ou 'cliente'
+            usuario (str): Nome de usuário
+            senha (str): Senha
+            nome (str, optional): Nome completo. Defaults to None.
+            email (str, optional): E-mail. Defaults to None.
+        
+        Returns:
+            Usuario: Instância de Administrador ou Cliente
+        
+        Raises:
+            ValueError: Se o tipo for inválido.
+        """
+        if tipo.lower() == "admin":
+            return Administrador(usuario, senha, nome, email)
+        elif tipo.lower() == "cliente":
+            return Cliente(usuario, senha, nome, email)
+        else:
+            raise ValueError("Tipo de usuário inválido. Use 'admin' ou 'cliente'.")
