@@ -312,10 +312,3 @@ class PaymentContext:
 
 ---
 
-## **Conclusão**
-Este projeto demonstra como **padrões de projeto** resolvem problemas comuns em sistemas reais:
-1. **Factory Method**: Centraliza a criação de usuários.
-2. **Observer**: Notifica clientes sobre mudanças.
-3. **Facade**: Simplifica o processo de checkout.
-4. **Strategy**: Gerencia diferentes formas de pagamento.
-
