@@ -1,89 +1,181 @@
-# E-Commerce System - POO Project
+# E-Commerce System - POO Project (Versão Atualizada)
 
 ## Descrição
-Sistema de e-commerce desenvolvido em Python utilizando Programação Orientada a Objetos (POO) e padrões de projeto. O sistema permite:
-- Administradores gerenciarem produtos
-- Clientes visualizarem produtos, adicionarem ao carrinho e finalizarem compras
-- Autenticação de usuários com diferentes níveis de acesso
+Sistema completo de e-commerce desenvolvido em Python utilizando Programação Orientada a Objetos (POO) e padrões de projeto. O sistema agora inclui:
 
-## Arquitetura
-Padrão MVC (Model-View-Controller) com os seguintes componentes:
+- Cadastro e autenticação de usuários
+- Gerenciamento completo de produtos (estoque, notificações)
+- Processo de compra com múltiplos métodos de pagamento
+- Sistema de pedidos e rastreamento
 
-### Models
-- `user.py`: Classes de usuários (Administrador, Cliente)
-- `product.py`: Gerenciamento de produtos
-- `order.py`: Processamento de pedidos
-- `observer.py`: Implementação do padrão Observer
+## Arquitetura MVC Atualizada
 
-### Views
-- `auth_view.py`: Telas de autenticação
-- `admin_view.py`: Interface do administrador
-- `client_view.py`: Interface do cliente
+### Models (Camada de Dados)
+- `user.py`: 
+  - Classes `Usuario` (abstrata), `Administrador`, `Cliente`
+  - `UsuarioFactory` (Factory Method para criação de usuários)
+- `product.py`:
+  - Classe `Product` (com padrão Observer integrado)
+  - Controle de estoque e notificações
+- `order.py`:
+  - Classes `Order` e `OrderManager`
+  - Rastreamento de status de pedidos
+- `observer.py`:
+  - Implementação completa do padrão Observer
+  - Classes `Subject`, `Observer`, `EmailNotifier`
 
-### Controllers
-- `auth_controller.py`: Gerencia autenticação
-- `admin_controller.py`: Controla ações de admin
-- `client_controller.py`: Controla ações do cliente
+### Views (Interface)
+- `auth_view.py`: Fluxo de autenticação e cadastro
+- `admin_view.py`: Interface para gerenciamento de produtos
+- `client_view.py`: 
+  - Catálogo de produtos
+  - Carrinho de compras
+  - Acompanhamento de pedidos
 
-### Services
-- `checkout_facade.py`: Facade para processo de checkout
-- `payment_strategy.py`: Estratégias de pagamento
+### Controllers (Lógica)
+- `auth_controller.py`: 
+  - Gerencia login/cadastro
+  - Utiliza `UsuarioFactory`
+- `admin_controller.py`:
+  - CRUD de produtos
+  - Integra com sistema de notificações
+- `client_controller.py`:
+  - Processo de compra completo
+  - Integração com `CheckoutFacade`
 
-## Padrões de Projeto Implementados
+### Services (Lógica Complexa)
+- `checkout_facade.py`:
+  - Orquestra todo o fluxo de checkout
+  - Integra validação, pagamento e estoque
+- `payment_strategy.py`:
+  - Implementa Strategy para pagamentos
+  - Classes `PaymentStrategy`, `CreditCardPayment`, `PixPayment`
 
-### Factory Method
-**Classe**: `UsuarioFactory` (em `models/user.py`)  
-**Propósito**: Criar instâncias de diferentes tipos de usuários  
-**Métodos**:
-- `criar_usuario(tipo, usuario, senha)`: Retorna instância de Administrador ou Cliente
+## Padrões de Projeto Implementados (Detalhados)
 
-### Observer
-**Classes** (em `models/observer.py`):
-- `Subject`: Mantém lista de observers e notifica mudanças
-- `Observer`: Interface abstrata para observers
-- `EmailNotifier`: Implementação concreta para notificações por e-mail
+### 1. Factory Method (`UsuarioFactory`)
+**Localização**: `models/user.py`  
+**Funcionamento**:
+```python
+user = UsuarioFactory.criar_usuario("admin", "admin1", "senha123")
+```
+**Benefícios**:
+- Centraliza a criação de objetos usuário
+- Facilita adicionar novos tipos de usuários
+- Elimina condicionais complexas no código
 
-**Uso**: Notifica clientes sobre novos produtos (integrado em `Product`)
+### 2. Observer (Sistema de Notificações)
+**Localização**: `models/observer.py` e `models/product.py`  
+**Fluxo**:
+1. Produto é criado/adicionado
+2. Notifica todos os observers registrados:
+```python
+produto.notificar("Novo iPhone em estoque!")
+```
+**Implementação**:
+- `EmailNotifier`: Envia e-mails para clientes
+- Pode ser estendido para SMS ou push notifications
 
-### Facade
-**Classe**: `CheckoutFacade` (em `services/checkout_facade.py`)  
-**Propósito**: Simplificar interface para processo de checkout  
-**Métodos principais**:
-- `finalizar_compra()`: Orquestra validação, pagamento e criação de pedido
-- Métodos privados para cada etapa do processo (`_validar_estoque`, `_processar_pagamento`)
+### 3. Facade (Processo de Checkout)
+**Localização**: `services/checkout_facade.py`  
+**Métodos Principais**:
+- `_validar_estoque()`: Checa disponibilidade
+- `_processar_pagamento()`: Usa Strategy pattern
+- `_gerar_pedido()`: Cria registro de pedido
 
-### Strategy
-**Classes** (em `services/payment_strategy.py`):
-- `PaymentStrategy`: Interface para estratégias de pagamento
-- `CreditCardPayment`: Implementação para pagamento com cartão
-- `PixPayment`: Implementação para pagamento via Pix
-- `PaymentContext`: Contexto que executa a estratégia selecionada
+**Exemplo de Uso**:
+```python
+facade = CheckoutFacade(carrinho, usuario)
+facade.finalizar_compra("pix")
+```
 
-## Fluxo Principal
+### 4. Strategy (Métodos de Pagamento)
+**Localização**: `services/payment_strategy.py`  
+**Estrutura**:
+```python
+class CreditCardPayment(PaymentStrategy):
+    def pay(self, amount):
+        # Lógica específica para cartão
+        return True
+```
+**Como Trocar Métodos**:
+```python
+contexto = PaymentContext(PixPayment())
+contexto.executar_pagamento(100.00)
+```
 
-1. **Autenticação**:
-   - Usuários fazem login ou se cadastram via `AuthController`
-   - Factory Method cria instâncias adequadas de usuário
+## Fluxo Completo do Sistema
 
-2. **Administração**:
-   - Admins gerenciam produtos através do `AdminController`
-   - Novos produtos notificam observers registrados
+1. **Inicialização**:
+   - Carrega produtos pré-cadastrados
+   - Inicializa serviços
 
-3. **Compra**:
-   - Clientes adicionam itens ao carrinho
-   - CheckoutFacade orquestra o processo de compra
-   - PaymentStrategy processa o pagamento conforme método selecionado
+2. **Autenticação**:
+   - Usuário faz login ou cadastro
+   - `UsuarioFactory` cria instância adequada
+
+3. **Admin Logado**:
+   - Adiciona/edita produtos
+   - Cada novo produto notifica observers
+
+4. **Cliente Logado**:
+   - Navega por produtos
+   - Adiciona ao carrinho
+   - Finaliza compra via Facade:
+     - Valida estoque
+     - Processa pagamento (Strategy)
+     - Gera pedido
+     - Atualiza estoque
+
+5. **Pós-Compra**:
+   - Notificações por e-mail (Observer)
+   - Acompanhamento de pedido
 
 ## Como Executar
-1. Instale Python 3+
-2. Execute o arquivo principal:
-   ```bash
-   python main.py
-   
+
+1. Clone o repositório
+2. Execute:
+```bash
+python main.py
+```
+
+3. Use as credenciais:
+   - Admin: usuario="admin", senha="admin123"
+   - Ou crie novo usuário
+
+## Dependências
+- Python 3.8+
+- Nenhuma biblioteca externa necessária
+
+## Diagrama de Componentes
+
+```
+[Main]
+  |
+  |--> [AuthController] ↔ [AuthView]
+  |     |
+  |     |--> UsuarioFactory
+  |
+  |--> [AdminController] ↔ [AdminView]
+  |     |
+  |     |--> Product (Observer)
+  |
+  |--> [ClientController] ↔ [ClientView]
+        |
+        |--> CheckoutFacade
+              |
+              |--> PaymentStrategy
+              |--> OrderManager
+```
+
+## Melhorias Futuras
+1. Persistência em banco de dados
+2. Sistema de avaliação de produtos
+3. Cupons de desconto
+4. Dashboard administrativo
+
 ---
 # **Explicação Profunda do Projeto E-Commerce com Padrões de Projeto**
-
-A seguir, uma explicação detalhada sobre **como os padrões de projeto foram aplicados**, **para que servem** e **como funcionam** no sistema.
 
 ---
 
@@ -227,4 +319,3 @@ Este projeto demonstra como **padrões de projeto** resolvem problemas comuns em
 3. **Facade**: Simplifica o processo de checkout.
 4. **Strategy**: Gerencia diferentes formas de pagamento.
 
-Cada padrão foi aplicado **sem alterar o fluxo principal**, mantendo o código **organizado, testável e escalável**. Se surgirem dúvidas durante a apresentação, posso esclarecer!
